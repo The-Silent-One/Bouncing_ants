@@ -4,7 +4,8 @@ import random
 import math
 import threading
 
-nb_ants = 10
+nb_ants = 100
+mv = 1
 x , y= 500,500
 space_x = 3*x/28
 
@@ -17,8 +18,6 @@ class ant():
     x , y= 500,500
     radius = 6
     step = 5
-    
-    job_count = {j[0]:0,j[1]:0,j[2]:0,j[3]:0}
     
     def __init__(self,win,pos_x,pos_y,job):
 
@@ -37,6 +36,7 @@ class ant():
             self.current_y = pos_y
 
         self.job=job
+        self.job_count = {j[0]:0,j[1]:0,j[2]:0,j[3]:0}
         self.draw = Circle(Point(self.current_x,self.current_y),self.radius)
         self.draw.draw(win)
         self.draw.setFill(job_colors[self.job])
@@ -48,12 +48,14 @@ class ant():
     def around_me(self,other):
         dx = abs(self.current_x - other.current_x)
         dy = abs(self.current_y - other.current_y)
-        return ( dx <= 2*self.radius or dy <= 2*self.radius)
+        return ( dx <= 2*self.radius and dy <= 2*self.radius)
 
     def count(self,colony):
-        for a in colony:
+        for a in colony.ants:
             if(self.around_me(a)):
-                job_count[a.job] = job_count[a.job] + 1
+                self.job_count[a.job] = self.job_count[a.job] + 1
+        self.job_count[self.job] = self.job_count[self.job] -1
+        print(self.job_count)
 
     def move(self):
         dir_x = math.ceil(random.uniform(-2,1)) * self.step
@@ -148,7 +150,9 @@ class Colony():
         for i in range(nb):
             for a in self.ants:
                 a.move()
+                a.count(self)
                 sleep(self.wait/4)
+                
 
     def get_count(self):
         
@@ -184,5 +188,5 @@ class Colony():
 
 colony = Colony(nb_ants)
 threading.Thread(target=colony.update_count()).start()
-colony.move(10)
+colony.move(mv)
 colony.destroy()
