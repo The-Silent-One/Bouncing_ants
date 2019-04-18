@@ -2,11 +2,12 @@ from graphics import *
 from time import *
 import random
 import math
-import threading
 
-nb_ants = 100
-mv = 1
+nb_ants = 200
+mv = 1000
 x , y= 500,500
+swap_t = 10
+wait = 10000
 space_x = 3*x/28
 
 turn = 10
@@ -14,8 +15,6 @@ j = ["Soldier","Farmer","Caretaker","Forager"]
 job_colors = {j[0]:"#d60c20",j[1]:"#409621",j[2]:"#1ebca2",j[3]:"#bcbc1d"}
 
 class ant():
-    
-    x , y= 500,500
     radius = 6
     step = 5
     
@@ -23,15 +22,15 @@ class ant():
 
         if(pos_x<self.radius):
             self.current_x = 0 + 2*self.radius
-        elif (pos_x > self.x-self.radius):
-            self.current_x = self.x - 2*self.radius
+        elif (pos_x > x-self.radius):
+            self.current_x = x - 2*self.radius
         else:
             self.current_x = pos_x
 
-        if(pos_y<3*self.y/8+self.radius):
+        if(pos_y<3*y/8+self.radius):
             self.current_y = 3*y/8 + 2*self.radius
-        elif (pos_y > self.y-self.radius):
-            self.current_y = self.y - 2*self.radius
+        elif (pos_y > y-self.radius):
+            self.current_y = y - 2*self.radius
         else:
             self.current_y = pos_y
 
@@ -55,7 +54,7 @@ class ant():
             if(self.around_me(a)):
                 self.job_count[a.job] = self.job_count[a.job] + 1
         self.job_count[self.job] = self.job_count[self.job] -1
-        print(self.job_count)
+        #print("{0} : {1}".format(min_j,self.job_count[min_j])) 
 
     def move(self):
         dir_x = math.ceil(random.uniform(-2,1)) * self.step
@@ -63,16 +62,23 @@ class ant():
         if(dir_x+self.current_x < self.radius
            or dir_x+self.current_x > x):
             dir_x = dir_x*(-1)
-        if(dir_y+self.current_y < 3*self.y/8 + self.radius
+        if(dir_y+self.current_y < 3*y/8 + self.radius
            or dir_y+self.current_y > y):
             dir_y = dir_y*(-1)
         self.draw.move(dir_x,dir_y)
         self.current_x = self.current_x + dir_x
         self.current_y = self.current_y + dir_y
 
-class Colony():
+    def get_min(self):
+        min_j = min(self.job_count,key=self.job_count.get)
+        return [min_j,self.job_count[min_j]]
 
-    wait = 1
+    def swap_ant(self):
+        min_j = self.get_min()
+        self.job = min_j[0]
+        self.draw.setFill(job_colors[self.job])
+
+class Colony():
 
     global_job_count = {j[0]:0,j[1]:0,j[2]:0,j[3]:0}
 
@@ -98,7 +104,7 @@ class Colony():
                        self.pos_y1/2),j[3]).draw(win)
 
         self.soldier_t = Text(Point((self.pos_soldier_x1+self.pos_soldier_x2)/2,
-                       3*self.pos_y1),str(self.global_job_count[j[0]]))
+                       3*self.pos_y1),self.global_job_count[j[0]])
         soldier = Rectangle(Point(self.pos_soldier_x1,self.pos_y1),
                             Point(self.pos_soldier_x2,self.pos_y2))
         soldier.setFill(job_colors[j[0]])
@@ -134,6 +140,9 @@ class Colony():
     def destroy(self):
         self.win.getMouse()
         self.win.close()
+
+    def start(self):
+        self.win.getMouse()
         
     def __init__(self,nb_ants):
         
@@ -146,12 +155,14 @@ class Colony():
             ind = int(random.uniform(0,4))
             self.ants.append(ant(self.win,px,py,j[ind]))
 
-    def move(self,nb):
-        for i in range(nb):
+    def move(self):
+        for i in range(1,mv+1):
             for a in self.ants:
                 a.move()
                 a.count(self)
-                sleep(self.wait/4)
+                sleep(0.5/wait)
+            if (i%swap_t ==0):
+                self.swap()
                 
 
     def get_count(self):
@@ -160,33 +171,40 @@ class Colony():
             self.global_job_count[i] = 0
         for a in self.ants:
             self.global_job_count[a.job] = self.global_job_count[a.job] +1 
+
+    def swap(self):
+        for a in self.ants:
+            a.swap_ant()
+        self.update_count()
         
     def update_count(self):
-        
+
         self.get_count()
+        #print(self.global_job_count)
         
         self.soldier_t.setText(self.global_job_count[j[0]])
         self.soldier_t.undraw()
-        sleep(0.1*self.wait)
+        sleep(1/wait)
         self.soldier_t.draw(self.win)
 
         self.farmer_t.setText(self.global_job_count[j[1]])
         self.farmer_t.undraw()
-        sleep(0.1*self.wait)
+        sleep(1/wait)
         self.farmer_t.draw(self.win)
 
         self.caretaker_t.setText(self.global_job_count[j[2]])
         self.caretaker_t.undraw()
-        sleep(0.1*self.wait)
+        sleep(1/wait)
         self.caretaker_t.draw(self.win)
 
         self.forager_t.setText(self.global_job_count[j[3]])
         self.forager_t.undraw()
-        sleep(0.1*self.wait)
+        sleep(1/wait)
         self.forager_t.draw(self.win)
 
 
 colony = Colony(nb_ants)
-threading.Thread(target=colony.update_count()).start()
-colony.move(mv)
+colony.update_count()
+colony.start()
+colony.move()
 colony.destroy()
