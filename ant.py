@@ -7,7 +7,7 @@ nb_ants = 200
 mv = 1000
 x , y= 500,500
 swap_t = 10
-wait = 10000
+speed = 10000
 space_x = 3*x/28
 
 turn = 10
@@ -160,7 +160,7 @@ class Colony():
             for a in self.ants:
                 a.move()
                 a.count(self)
-                sleep(0.5/wait)
+                sleep(0.5/speed)
             if (i%swap_t ==0):
                 self.swap()
                 
@@ -184,22 +184,22 @@ class Colony():
         
         self.soldier_t.setText(self.global_job_count[j[0]])
         self.soldier_t.undraw()
-        sleep(1/wait)
+        sleep(1/speed)
         self.soldier_t.draw(self.win)
 
         self.farmer_t.setText(self.global_job_count[j[1]])
         self.farmer_t.undraw()
-        sleep(1/wait)
+        sleep(1/speed)
         self.farmer_t.draw(self.win)
 
         self.caretaker_t.setText(self.global_job_count[j[2]])
         self.caretaker_t.undraw()
-        sleep(1/wait)
+        sleep(1/speed)
         self.caretaker_t.draw(self.win)
 
         self.forager_t.setText(self.global_job_count[j[3]])
         self.forager_t.undraw()
-        sleep(1/wait)
+        sleep(1/speed)
         self.forager_t.draw(self.win)
 
 
