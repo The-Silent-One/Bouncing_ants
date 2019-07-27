@@ -1,4 +1,4 @@
-# Bouncing_ants
+# Bouncing ants
 
 It is a python app sort of game, that simulates a fundamental algorithm for ants. It uses the [graphics.py](https://www.irif.fr/~sangnier/enseignement/IP1-Python/Tp10b/graphics.py) module.
 
